@@ -17,7 +17,7 @@ async function createBookingService(bookingInfo: CreateBookingParams) {
   const userEnrolled = await enrollmentRepository.findWithAddressByUserId(bookingInfo.userId);
 
   if (!userEnrolled) {
-    throw notFoundError();
+    throw cannotCreateBookingError();
   }
 
   const ticket = await ticketRepository.findTicketByEnrollmentId(userEnrolled.id);
