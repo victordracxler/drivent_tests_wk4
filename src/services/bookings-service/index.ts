@@ -31,7 +31,28 @@ async function createBookingService(bookingInfo: CreateBookingParams) {
     throw cannotCreateBookingError();
   }
 
-  const room = await bookingsRepository.findRoom(bookingInfo.roomId);
+  await roomExistsAndIsVacant(bookingInfo.roomId);
+
+  const booking = await bookingsRepository.createBooking(bookingInfo);
+  return booking;
+}
+
+async function updateBookingService(bookingId: number, bookingInfo: CreateBookingParams) {
+  const originalBooking = await bookingsRepository.findBooking(bookingInfo.userId);
+
+  if (!originalBooking || bookingId !== originalBooking.id) {
+    throw cannotCreateBookingError();
+  }
+
+  await roomExistsAndIsVacant(bookingInfo.roomId);
+
+  const newBooking = await bookingsRepository.updateBooking(bookingId, bookingInfo);
+
+  return newBooking;
+}
+
+async function roomExistsAndIsVacant(roomId: number) {
+  const room = await bookingsRepository.findRoom(roomId);
 
   if (!room) {
     throw notFoundError();
@@ -40,9 +61,6 @@ async function createBookingService(bookingInfo: CreateBookingParams) {
   if (room.capacity === room.Booking.length) {
     throw cannotCreateBookingError();
   }
-
-  const booking = await bookingsRepository.createBooking(bookingInfo);
-  return booking;
 }
 
 export type CreateBookingParams = Pick<Booking, 'roomId' | 'userId'>;
@@ -50,6 +68,7 @@ export type CreateBookingParams = Pick<Booking, 'roomId' | 'userId'>;
 const bookingsService = {
   findBookingService,
   createBookingService,
+  updateBookingService,
 };
 
 export default bookingsService;
